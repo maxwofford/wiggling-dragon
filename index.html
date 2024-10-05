@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wiggling Dragon</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js" integrity="sha512-xi/RZRIF/S0hJ+yJJYuZ5yk6/8pCiRlEXZzoguSMl+vk2i3m6UjUO/WcZ11blRL/O+rnj94JRGwt/CHbc9+6EA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="yap.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: black; /* Background color set to black */
+        }
+    </style>
+</head>
+<body>
+    <script>
+        let segments = 10; // Number of segments
+        let angle = []; // Array to store angles
+        let length = 15; // Length of each segment
+        let head; // Variable to store the dragon's head image
+        let headWiggleAmount = 0.1; // Amount of wiggle for the head
+        let wiggleDuration = 20; // Duration of wiggle effect
+        let wiggleCounter = 0; // Counter to track the wiggle duration
+
+        function preload() {
+            head = loadImage('head.png'); // Load the dragon's head image
+        }
+
+        function setup() {
+            createCanvas(800, 600);
+            for (let i = 0; i < segments; i++) {
+                angle.push(0);
+            }
+        }
+
+        function draw() {
+            background(0); // Set background to black
+            let targetAngle = atan2(mouseY - height / 2, mouseX - width / 2);
+            angle[0] = targetAngle; // Set the first segment to point at the mouse
+
+            // Tween each segment's angle towards the previous segment's angle using lerp
+            for (let i = 1; i < segments; i++) {
+                angle[i] = lerp(angle[i], angle[i - 1], 0.03);
+            }
+
+            // Draw the segments as a contiguous shape
+            let points = []; // Array to store points for the shape
+            let x = width / 2; // Starting x
+            let y = height / 2; // Starting y
+
+            for (let i = 0; i < segments; i++) {
+                x += cos(angle[i]) * length;
+                y += sin(angle[i]) * length;
+                points.push(createVector(x, y)); // Store the position of each segment
+            }
+
+            // Draw the contiguous shape
+            // fill(255); // Set fill color to white
+            // noStroke(); // No outline
+            noFill(); // No fill
+            stroke(255)
+            strokeWeight(20); // Set stroke weight to 2
+            beginShape();
+            curveVertex()
+            for (let p of points) {
+                vertex(p.x, p.y); // Create a vertex for each point
+            }
+            endShape(); // Close the shape
+
+            // Position the dragon's head at the tip
+            let headX = x;
+            let headY = y;
+
+            // Calculate angle towards the mouse and apply a force with a 30-degree freedom
+            let headTargetAngle = atan2(mouseY - headY, mouseX - headX);
+            let headAngle = lerp(angle[segments - 1], headTargetAngle, 0.07);
+            headAngle = constrain(headAngle, angle[segments - 1] - radians(30), angle[segments - 1] + radians(30)); // Allow 30 degrees of freedom
+
+            // Add wiggle effect when active
+            if (wiggleCounter > 0) {
+                headAngle += random(-headWiggleAmount, headWiggleAmount); // Apply random wiggle
+                wiggleCounter--; // Decrease the wiggle counter
+            }
+
+            // Draw the dragon's head
+            push();
+            translate(headX, headY);
+            rotate(headAngle);
+            imageMode(CENTER);
+            image(head, 0, 0, 40, 30); // Adjust size as necessary
+            pop();
+        }
+
+        // Activate the wiggle effect on keyboard input
+
+        function keyPressed() {
+            if (key == 'w') {
+                wiggleCounter += wiggleDuration; // Set the wiggle counter
+            }
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'w') {
+                wiggleCounter += wiggleDuration; // Set the wiggle counter
+                yap('wiggle')
+            }
+        });
+    </script>
+</body>
+</html>
