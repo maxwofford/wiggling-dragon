@@ -108,9 +108,36 @@
         document.addEventListener('keydown', function(event) {
             if (event.key === 'w') {
                 wiggleCounter += wiggleDuration; // Set the wiggle counter
-                yap('wiggle')
+                const bruhLength = random(1, 10)
+                yap('br' + 'ou'.repeat(bruhLength));
+                const el = document.createElement('div');
+                el.innerHTML = 'br' + 'u'.repeat(bruhLength) + 'h';
+                el.classList.add('bruhs');
+                el.style.position = 'absolute';
+                el.style.left = mouseX + 'px';
+                el.style.top = mouseY + 'px';
+                el.style.rotate = random(0, 360) + 'deg';
+                document.body.appendChild(el)
+                // fade out the el before removing it
+                setTimeout(() => {
+                    el.classList.add('hidden');
+                    setTimeout(() => {
+                        el.remove();
+                    }, 2000);
+                }, 1000);
             }
         });
     </script>
+    <style>
+      .bruhs {
+        position: absolute;
+        color: white;
+        opacity: 1;
+      }
+      .hidden {
+        transition-duration: 2s;
+        opacity: 0;
+      }
+    </style>
 </body>
 </html>
