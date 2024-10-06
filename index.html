@@ -52,6 +52,10 @@
             angleDiff = atan2(sin(angleDiff), cos(angleDiff)); // Normalize angle difference
             angleDiff = constrain(angleDiff, -maxAngleChange, maxAngleChange); // Limit rotation speed
 
+            if (wiggleCounter > 0) {
+                angleDiff += Math.sin(frameCount * 0.1) * 0.125;
+            }
+
             // Apply velocity and inertia to the first segment
             angularVelocities[0] += angleDiff * 0.1; // Adjust 0.1 for responsiveness
             angularVelocities[0] *= damping; // Apply damping
@@ -125,7 +129,7 @@
             if (event.key === 'w') {
                 wiggleCounter += wiggleDuration; // Set the wiggle counter
                 const bruhLength = random(1, 10);
-                yap('br' + 'ou'.repeat(bruhLength));
+                yap('br' + 'ou'.repeat(bruhLength), { baseRate: 2.6 });
                 const el = document.createElement('div');
                 el.innerHTML = 'br' + 'u'.repeat(bruhLength) + 'h';
                 el.classList.add('bruhs');
