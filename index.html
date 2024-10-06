@@ -21,8 +21,10 @@
 <body>
     <script>
         let segments = 20; // Number of segments
-        let angle = []; // Array to store angles
+        let angles = []; // Array to store angles
+        let angularVelocities = []; // Array to store angular velocities
         let length = 5; // Length of each segment
+        let damping = 0.7; // Damping factor to reduce oscillations over time
         let head; // Variable to store the dragon's head image
         let headWiggleAmount = 0.1; // Amount of wiggle for the head
         let wiggleDuration = 20; // Duration of wiggle effect
@@ -35,21 +37,33 @@
         function setup() {
             createCanvas(800, 600);
             for (let i = 0; i < segments; i++) {
-                angle.push(0);
+                angles.push(0);
+                angularVelocities.push(0); // Start with zero velocity for each segment
             }
         }
 
         function draw() {
             background(0); // Set background to black
             let targetAngle = atan2(mouseY - height / 2, mouseX - width / 2);
-            angle[0] = targetAngle; // Set the first segment to point at the mouse
+            
+            // Calculate the angle difference for the first segment
+            let angleDiff = targetAngle - angles[0];
+            angleDiff = atan2(sin(angleDiff), cos(angleDiff)); // Normalize angle difference
 
-            // Tween each segment's angle towards the previous segment's angle using lerp
+            // Apply velocity and inertia to the first segment
+            angularVelocities[0] += angleDiff * 0.1; // Adjust 0.1 for responsiveness
+            angularVelocities[0] *= damping; // Apply damping
+            angles[0] += angularVelocities[0]; // Update the angle of the first segment
+
+            // Update subsequent segments
             for (let i = 1; i < segments; i++) {
-                let angleDiff = Math.min(Math.abs(angle[i] - angle[i - 1]) / 3, 1)
-                if (isNaN(angleDiff)) {angleDiff = 0.1}
-                if (angleDiff < 0.001) {angleDiff = 0}
-                angle[i] = lerp(angle[i], angle[i - 1], angleDiff);
+                let angleDiff = angles[i - 1] - angles[i];
+                angleDiff = atan2(sin(angleDiff), cos(angleDiff)); // Normalize angle difference
+
+                // Apply velocity and inertia to each segment
+                angularVelocities[i] += angleDiff * 0.1; // Adjust 0.1 for responsiveness
+                angularVelocities[i] *= damping; // Apply damping
+                angles[i] += angularVelocities[i]; // Update the angle
             }
 
             // Draw the segments as a contiguous shape
@@ -58,17 +72,16 @@
             let y = height / 2; // Starting y
 
             for (let i = 0; i < segments; i++) {
-                x += cos(angle[i]) * length;
-                y += sin(angle[i]) * length;
+                x += cos(angles[i]) * length;
+                y += sin(angles[i]) * length;
                 points.push(createVector(x, y)); // Store the position of each segment
             }
 
             // Draw the contiguous shape
             noFill(); // No fill
-            stroke(255)
-            strokeWeight(20); // Set stroke weight to 2
+            stroke(255);
+            strokeWeight(20); // Set stroke weight to 20
             beginShape();
-            curveVertex()
             for (let p of points) {
                 vertex(p.x, p.y); // Create a vertex for each point
             }
@@ -80,8 +93,8 @@
 
             // Calculate angle towards the mouse and apply a force with a 30-degree freedom
             let headTargetAngle = atan2(mouseY - headY, mouseX - headX);
-            let headAngle = lerp(angle[segments - 1], headTargetAngle, 0.07);
-            headAngle = constrain(headAngle, angle[segments - 1] - radians(30), angle[segments - 1] + radians(30)); // Allow 30 degrees of freedom
+            let headAngle = lerp(angles[segments - 1], headTargetAngle, 0.07);
+            headAngle = constrain(headAngle, angles[segments - 1] - radians(30), angles[segments - 1] + radians(30)); // Allow 30 degrees of freedom
 
             // Add wiggle effect when active
             if (wiggleCounter > 0) {
@@ -99,7 +112,6 @@
         }
 
         // Activate the wiggle effect on keyboard input
-
         function keyPressed() {
             if (key == 'w') {
                 wiggleCounter += wiggleDuration; // Set the wiggle counter
@@ -109,7 +121,7 @@
         document.addEventListener('keydown', function(event) {
             if (event.key === 'w') {
                 wiggleCounter += wiggleDuration; // Set the wiggle counter
-                const bruhLength = random(1, 10)
+                const bruhLength = random(1, 10);
                 yap('br' + 'ou'.repeat(bruhLength));
                 const el = document.createElement('div');
                 el.innerHTML = 'br' + 'u'.repeat(bruhLength) + 'h';
@@ -118,7 +130,7 @@
                 el.style.left = mouseX + 'px';
                 el.style.top = mouseY + 'px';
                 el.style.rotate = random(0, 360) + 'deg';
-                document.body.appendChild(el)
+                document.body.appendChild(el);
                 // fade out the el before removing it
                 setTimeout(() => {
                     el.classList.add('hidden');
