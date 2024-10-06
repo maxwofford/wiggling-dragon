@@ -1,3 +1,10 @@
+let isYappingCanceled = false;
+
+function cancelYaps() {
+  isYappingCanceled = true;
+  Howler.stop();
+}
+
 const yap_sounds = {
   // these sounds and most of the yapping code are adapted from https://github.com/equalo-official/animalese-generator
   a: new Howl({ src: 'audio/a.wav' }),
@@ -32,61 +39,66 @@ const yap_sounds = {
 }
 
 async function yap(text, {
-letterCallback = () => {},
-endCallback = () => {},
-baseRate = 3.2,
-rateVariance = 1,
+  letterCallback = () => { },
+  endCallback = () => { },
+  baseRate = 3.2,
+  rateVariance = 1,
 } = {}) {
+  isYappingCanceled = false;
 
-const yap_queue = [];
-for (let i = 0; i < text.length; i++) {
-  const char = text[i];
-  const lowerChar = char?.toLowerCase()
-  const prevChar = text[i - 1]
-  const prevLowerChar = prevChar?.toLowerCase()
-  const nextChar = text[i + 1]
-  const nextLowerChar = nextChar?.toLowerCase()
+  const yap_queue = [];
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const lowerChar = char?.toLowerCase()
+    const prevChar = text[i - 1]
+    const prevLowerChar = prevChar?.toLowerCase()
+    const nextChar = text[i + 1]
+    const nextLowerChar = nextChar?.toLowerCase()
 
-  if (lowerChar === 's' && nextLowerChar === 'h') { // test for 'sh' sound
-    yap_queue.push({letter: char, sound: yap_sounds['sh']});
-    continue;
-  } else if (lowerChar === 't' && nextLowerChar === 'h') { // test for 'th' sound
-    yap_queue.push({letter: char, sound: yap_sounds['th']});
-    continue;
-  } else if (lowerChar === 'h' && (prevLowerChar === 's' || prevLowerChar === 't')) { // test if previous letter was 's' or 't' and current letter is 'h'
-    yap_queue.push({letter: char, sound: yap_sounds['_']});
-    continue;
-  } else if (',?. '.includes(char)) {
-    yap_queue.push({letter: char, sound: yap_sounds['_']});
-    continue;
-  } else if (lowerChar === prevLowerChar) { // skip repeat letters
-    yap_queue.push({letter: char, sound: yap_sounds['_']});
-    continue;
+    if (lowerChar === 's' && nextLowerChar === 'h') { // test for 'sh' sound
+      yap_queue.push({ letter: char, sound: yap_sounds['sh'] });
+      continue;
+    } else if (lowerChar === 't' && nextLowerChar === 'h') { // test for 'th' sound
+      yap_queue.push({ letter: char, sound: yap_sounds['th'] });
+      continue;
+    } else if (lowerChar === 'h' && (prevLowerChar === 's' || prevLowerChar === 't')) { // test if previous letter was 's' or 't' and current letter is 'h'
+      yap_queue.push({ letter: char, sound: yap_sounds['_'] });
+      continue;
+    } else if (',?. '.includes(char)) {
+      yap_queue.push({ letter: char, sound: yap_sounds['_'] });
+      continue;
+    } else if (lowerChar === prevLowerChar) { // skip repeat letters
+      yap_queue.push({ letter: char, sound: yap_sounds['_'] });
+      continue;
+    }
+
+    if (lowerChar.match(/[a-z.]/)) {
+      yap_queue.push({ letter: char, sound: yap_sounds[lowerChar] })
+      continue; // skip characters that are not letters or periods
+    }
+
+    yap_queue.push({ letter: char, sound: yap_sounds['_'] })
   }
 
-  if (lowerChar.match(/[a-z.]/)) {
-    yap_queue.push({letter: char, sound: yap_sounds[lowerChar]})
-    continue; // skip characters that are not letters or periods
+  function next_yap() {
+    if (isYappingCanceled) {
+      console.log('yap canceled');
+      return;
+    }
+    if (yap_queue.length === 0) {
+      console.log('yap done')
+      endCallback()
+      return
+    }
+    let { sound, letter } = yap_queue.shift()
+    sound.rate(Math.random() * rateVariance + baseRate)
+    sound.volume(1)
+    sound.once('end', next_yap)
+    sound.play()
+    sound.once('play', () => {
+      letterCallback({ sound, letter, length: yap_queue.length })
+    })
   }
 
-  yap_queue.push({letter: char, sound: yap_sounds['_']})
-}
-
-function next_yap() {
-  if (yap_queue.length === 0) {
-    console.log('yap done')
-    endCallback()
-    return
-  }
-  let {sound, letter} = yap_queue.shift()
-  sound.rate(Math.random() * rateVariance + baseRate)
-  sound.volume(1)
-  sound.once('end', next_yap)
-  sound.play()
-  sound.once('play', () => {
-    letterCallback({sound, letter, length: yap_queue.length})
-  })
-}
-
-next_yap();
+  next_yap();
 }

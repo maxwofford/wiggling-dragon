@@ -129,6 +129,7 @@
             if (event.key === 'w') {
                 wiggleCounter += wiggleDuration; // Set the wiggle counter
                 const bruhLength = random(1, 10);
+                cancelYaps();
                 yap('br' + 'ou'.repeat(bruhLength), { baseRate: 2.6 });
                 const el = document.createElement('div');
                 el.innerHTML = 'br' + 'u'.repeat(bruhLength) + 'h';
