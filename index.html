@@ -89,6 +89,22 @@
         points.push(createVector(x, y)); // Store the position of each segment
       }
 
+      // Draw scales offset from the body, before the body is drawn
+      for (let i = points.length - 1; i >= 0; i--) {
+        // let scaleSize = map(i, 0, points.length - 1, 5, 20); // Reverse scale size (bigger near head, smaller near base)
+        let scaleSize = map(i, 0, points.length - 1, 20, 5); // Reverse scale size (bigger near head, smaller near base)
+        // Find the perpendicular direction by adding π/2 (90 degrees) to the angle
+        let offset = p5.Vector.fromAngle(angles[i] + HALF_PI).mult(-10); // Offset perpendicular to the body, adjust 'mult' to control distance
+
+        let scaleX = points[i].x + offset.x; // Position of the scale
+        let scaleY = points[i].y + offset.y;
+
+        fill(225); // White scales
+        strokeWeight(1);
+        stroke(15);
+        ellipse(scaleX, scaleY, scaleSize, scaleSize / 2); // Draw the scale slightly offset
+      }
+
       // Draw the contiguous shape
       noFill(); // No fill
       stroke(255);
