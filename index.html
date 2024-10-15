@@ -29,12 +29,15 @@
     let angles = []; // Array to store angles
     let angularVelocities = []; // Array to store angular velocities
     let length = 5; // Length of each segment
-    let damping = 0.7; // Increased damping to reduce overcorrection
+    let damping = 0.715; // Increased damping to reduce overcorrection
     let maxAngleChange = 5; // Cap on how much each segment can rotate per frame
     let head; // Variable to store the dragon's head image
     let headWiggleAmount = 0.1; // Amount of wiggle for the head
     let wiggleDuration = 20; // Duration of wiggle effect
     let wiggleCounter = 0; // Counter to track the wiggle duration
+
+    let baseX = 0
+    let baseY = 0
 
     function preload() {
       head = loadImage('head.png'); // Load the dragon's head image
@@ -42,6 +45,8 @@
 
     function setup() {
       createCanvas(800, 600);
+      baseX = 0
+      baseY = height
       for (let i = 0; i < segments; i++) {
         angles.push(0);
         angularVelocities.push(0); // Start with zero velocity for each segment
@@ -50,7 +55,8 @@
 
     function draw() {
       background(0); // Set background to black
-      let targetAngle = atan2(mouseY - height / 2, mouseX - width / 2);
+      // clear();
+      let targetAngle = atan2(mouseY - baseY, mouseX - baseX);
 
       // Calculate the angle difference for the first segment
       let angleDiff = targetAngle - angles[0];
@@ -80,8 +86,8 @@
 
       // Draw the segments as a contiguous shape
       let points = []; // Array to store points for the shape
-      let x = width / 2; // Starting x
-      let y = height / 2; // Starting y
+      let x = baseX; // Starting x
+      let y = baseY; // Starting y
 
       for (let i = 0; i < segments; i++) {
         x += cos(angles[i]) * length;
@@ -140,7 +146,8 @@
       push();
       translate(headX, headY);
       rotate(headAngle);
-      imageMode(CENTER);
+      imageMode(CORNERS)
+      translate(0, -15)
       image(head, 0, 0, 40, 30); // Adjust size as necessary
       pop();
     }
