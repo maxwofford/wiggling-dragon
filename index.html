@@ -28,9 +28,9 @@
     let segments = 20; // Number of segments
     let angles = []; // Array to store angles
     let angularVelocities = []; // Array to store angular velocities
-    let length = 5; // Length of each segment
+    let length = 10; // Length of each segment
     let damping = 0.715; // Increased damping to reduce overcorrection
-    let maxAngleChange = 5; // Cap on how much each segment can rotate per frame
+    let maxAngleChange = 9; // Cap on how much each segment can rotate per frame
     let head; // Variable to store the dragon's head image
     let headWiggleAmount = 0.1; // Amount of wiggle for the head
     let wiggleDuration = 20; // Duration of wiggle effect
@@ -64,7 +64,7 @@
       angleDiff = constrain(angleDiff, -maxAngleChange, maxAngleChange); // Limit rotation speed
 
       if (wiggleCounter > 0) {
-        angleDiff += Math.sin(frameCount * 0.1) * 0.125;
+        angleDiff += Math.sin(frameCount * 0.1) * 0.25;
       }
 
       // Apply velocity and inertia to the first segment
